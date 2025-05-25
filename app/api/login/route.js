@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../lib/prisma';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken'; // You need to install this
-import { serialize } from 'cookie'; // You need to install this
+import jwt from 'jsonwebtoken';
+import { serialize } from 'cookie';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Use env var in production
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export async function POST(request) {
   try {
@@ -47,8 +49,8 @@ export async function POST(request) {
     // Set HTTP-only cookie
     const cookie = serialize('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // Always use secure in production
+      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
@@ -66,7 +68,5 @@ export async function POST(request) {
       { message: 'Something went wrong. Please try again later.' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
