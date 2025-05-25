@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
